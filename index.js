@@ -1,0 +1,37 @@
+
+const express=require('express');
+const cors=require('cors');
+const stripe=require('stripe')(
+    process.env.STRIPE_KEY
+)
+const dotenv = require("dotenv")
+dotenv.config()
+//App Config
+const app=express();
+//Use Middlewares
+app.use(cors({origin:true}));
+app.use(express.json());//use this to generate codes in json format
+
+
+//use Route method
+app.get("/",(request,response)=>response.status(200).send("hello world"));
+//Post Method
+app.post('/payments/create',async(request,response)=>{
+    const total=request.query.total;
+    console.log("Payment Request Recieved for this amount>>>",total);
+    const paymentIntent=await stripe.paymentIntents.create({
+        amount:total,//submit of the currency
+        currency:"usd",
+    });
+    //Or Created
+    response.status(201).send({
+        clientSecret:paymentIntent.client_secret,
+    });
+});
+
+//Listen Command 
+// exports.api=functions.https.onRequest(app);
+app.listen(4040, console.log("Server rnning on port 4040"))
+
+//After running firebase emulator:start
+//I get base url which (http://127.0.0.1:5001/client-ba23e/us-central1/api)
